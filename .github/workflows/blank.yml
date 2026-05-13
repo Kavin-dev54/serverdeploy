@@ -1,43 +1,51 @@
 name: Deploy Pipeline
- 
+
 on:
   push:
     branches: [ main ]
- 
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
- 
+
     steps:
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+
           ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
- 
+
       - name: Deploy to server
         run: |
-          ssh -tt root@${{ secrets.HOST }} bash -s << 'EOF'
+          ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no root@${{ secrets.HOST }} << EOF
+
           set -euxo pipefail
- 
+
           echo "WHOAMI:"
           whoami
- 
+
           echo "PWD:"
           pwd
- 
+
           echo "LIST /tmp"
           ls -la /tmp
-          rm -rf /tmp/pipeline
-          echo "CREATE DIR"
-          mkdir -p /tmp/pipeline
- 
-          cd /tmp/pipeline
- 
+
+          rm -rf /tmp/serverdeploy
+
+          mkdir -p /tmp/serverdeploy
+
+          cd /tmp/serverdeploy
+
           echo "CLONE REPO"
+
           git clone https://github.com/Kavin-dev54/serverdeploy.git
- 
-          cd pipeline
+
+          cd serverdeploy
+
           ls -la
- 
+
+          echo "DEPLOY SUCCESS"
+
+          EOF
