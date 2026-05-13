@@ -27,33 +27,17 @@ jobs:
           echo "PWD:"
           pwd
  
-          echo "LIST /mnt/dev:"
-          ls -la /mnt/dev
- 
+          echo "LIST /tmp"
+          ls -la /tmp
+          rm -rf /tmp/pipeline
           echo "CREATE DIR"
-          mkdir -p /mnt/dev/pipeline
+          mkdir -p /tmp/pipeline
  
-          cd /mnt/dev/pipeline
+          cd /tmp/pipeline
  
           echo "CLONE REPO"
-          rm -rf pipeline
-          git clone https://github.com/AbdulrahmanDevOps/pipeline.git
+          git clone https://github.com/Kavin-dev54/serverdeploy.git
  
           cd pipeline
           ls -la
  
-          echo "DOCKER BUILD"
-          docker build -t pipeline .
- 
-          echo "DOCKER RUN"
-          docker stop pipeline || true
-          docker rm pipeline || true
-          docker run -d --name pipeline -p 1111:80 pipeline
-          echo "Deployment completed successfully"
-          exit 0
-          EOF
-          
-      - name: Verify Deployment
-        run: |
-          echo "✅ Pipeline deployed successfully"
-          echo "Container should be running on port 1111"
