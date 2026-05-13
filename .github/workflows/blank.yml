@@ -14,12 +14,33 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Copy index.html to Server
+      - name: Check Files
+        run: ls -la
+
+      - name: Copy HTML File to Server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
           port: ${{ secrets.PORT }}
-          source: "index.html"
+          source: "./index.html"
           target: "/tmp/"
+
+      - name: Verify File in Server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          port: ${{ secrets.PORT }}
+          script: |
+            echo "Connected Successfully"
+
+            echo "Files in /tmp"
+
+            ls -la /tmp/
+
+            echo "Checking index.html"
+
+            cat /tmp/index.html
