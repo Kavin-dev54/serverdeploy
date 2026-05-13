@@ -1,42 +1,59 @@
-name: Clone Repo To Server
-
+name: Deploy Pipeline
+ 
 on:
   push:
-    branches:
-      - main
-
+    branches: [ main ]
+ 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
+ 
     steps:
-
-      - name: Deploy Repository to Server
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          password: ${{ secrets.PASSWORD }}
-          port: ${{ secrets.PORT }}
-          script: |
-
-            echo "Connected to Server"
-
-            cd /tmp
-
-            if [ -d "newproject" ]; then
-              echo "Repository Exists"
-              cd newproject
-              git pull
-            else
-              echo "Cloning Repository"
-              git clone https://github.com/Kavin-dev54/serverdeploy.git
-            fi
-
-            echo "Deployment Completed"
-
-            ls -la /tmp
-
-            cd /tmp/newproject
-
-            ls -lahttps://github.com/Kavin-dev54/serverdeploy.git
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
+ 
+      - name: Deploy to server
+        run: |
+          ssh -tt root@${{ secrets.HOST }} bash -s << 'EOF'
+          set -euxo pipefail
+ 
+          echo "WHOAMI:"
+          whoami
+ 
+          echo "PWD:"
+          pwd
+ 
+          echo "LIST /mnt/dev:"
+          ls -la /mnt/dev
+ 
+          echo "CREATE DIR"
+          mkdir -p /mnt/dev/pipeline
+ 
+          cd /mnt/dev/pipeline
+ 
+          echo "CLONE REPO"
+          rm -rf pipeline
+          git clone https://github.com/AbdulrahmanDevOps/pipeline.git
+ 
+          cd pipeline
+          ls -la
+ 
+          echo "DOCKER BUILD"
+          docker build -t pipeline .
+ 
+          echo "DOCKER RUN"
+          docker stop pipeline || true
+          docker rm pipeline || true
+          docker run -d --name pipeline -p 1111:80 pipeline
+          echo "Deployment completed successfully"
+          exit 0
+          EOF
+          
+      - name: Verify Deployment
+        run: |
+          echo "✅ Pipeline deployed successfully"
+          echo "Container should be running on port 1111"
