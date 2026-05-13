@@ -1,4 +1,4 @@
-name: Deploy HTML
+name: Clone Repo To Server
 
 on:
   push:
@@ -11,13 +11,7 @@ jobs:
 
     steps:
 
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Show Files
-        run: ls -la
-
-      - name: Upload HTML using SSH
+      - name: Deploy Repository to Server
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.HOST }}
@@ -25,24 +19,24 @@ jobs:
           password: ${{ secrets.PASSWORD }}
           port: ${{ secrets.PORT }}
           script: |
-            echo "Connected"
 
-            cat > /tmp/index.html << 'EOF'
-            <!DOCTYPE html>
-            <html>
-            <head>
-              <title>GitHub Actions</title>
-            </head>
-            <body>
+            echo "Connected to Server"
 
-              <h1>Deployment Success</h1>
+            cd /tmp
 
-            </body>
-            </html>
-            EOF
+            if [ -d "newproject" ]; then
+              echo "Repository Exists"
+              cd newproject
+              git pull
+            else
+              echo "Cloning Repository"
+              git clone https://github.com/Kavin-dev54/serverdeploy.git
+            fi
 
-            echo "File Created"
+            echo "Deployment Completed"
 
-            ls -la /tmp/
+            ls -la /tmp
 
-            cat /tmp/index.html
+            cd /tmp/newproject
+
+            ls -lahttps://github.com/Kavin-dev54/serverdeploy.git
