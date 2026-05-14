@@ -10,11 +10,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout repository
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # Setup SSH
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
@@ -25,26 +23,40 @@ jobs:
 
           ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
 
-      # Deploy Application
       - name: Deploy to Server
         run: |
-          ssh -i ~/.ssh/id_ed25519 root@${{ secrets.HOST }} << 'EOF'
+          ssh -tt -i ~/.ssh/id_ed25519 root@${{ secrets.HOST }} << 'EOF'
 
-            set -euxo pipefail
+            set -x
 
-            echo "CONNECTED TO SERVER"
+            echo "CONNECTED"
 
-            # Go to project directory
-            cd /tmp/serverdeploy
+            echo "CURRENT USER:"
+            whoami
 
-            echo "CURRENT DIRECTORY:"
+            echo "CURRENT PATH:"
             pwd
 
-            echo "PULLING LATEST CODE"
-            git pull origin main
+            echo "CHECKING DIRECTORY"
 
-            echo "FILES AFTER PULL"
+            if [ ! -d "/tmp/serverdeploy" ]; then
+              echo "DIRECTORY NOT FOUND"
+              exit 1
+            fi
+
+            cd /tmp/serverdeploy
+
+            echo "INSIDE DIRECTORY"
+            pwd
+
+            echo "FILES:"
             ls -la
+
+            echo "GIT STATUS:"
+            git status
+
+            echo "PULLING CODE"
+            git pull origin main
 
             echo "DEPLOY SUCCESS"
 
