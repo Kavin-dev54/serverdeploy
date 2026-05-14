@@ -1,4 +1,5 @@
-name: Deploy Pipeline
+```yaml
+name: Auto Deploy to Server
 
 on:
   push:
@@ -10,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Setup SSH
@@ -23,20 +24,26 @@ jobs:
 
           ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
 
-      - name: Deploy to Server
+      - name: Deploy Latest Changes
         run: |
-          ssh -i ~/.ssh/id_ed25519 root@${{ secrets.HOST }} << 'EOF'
+          ssh -i ~/.ssh/id_ed25519 developer@${{ secrets.HOST }} << 'EOF'
 
             set -euxo pipefail
 
-            cd /tmp/serverdeploy
+            echo "CONNECTED TO SERVER"
 
-            git config --global --add safe.directory /tmp/serverdeploy
+            cd /home/kavin/serverdeploy
+
+            echo "CURRENT DIRECTORY:"
+            pwd
+
+            echo "PULLING LATEST CODE"
 
             git pull origin main
 
-            echo "DEPLOY SUCCESS"
+            echo "UPDATED FILES:"
+            ls -la
 
-            exit
+            echo "DEPLOYMENT SUCCESSFUL"
 
           EOF
