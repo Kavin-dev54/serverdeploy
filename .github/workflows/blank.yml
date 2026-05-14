@@ -27,36 +27,23 @@ jobs:
         run: |
           ssh -tt -i ~/.ssh/id_ed25519 root@${{ secrets.HOST }} << 'EOF'
 
-            set -x
+            set -euxo pipefail
 
             echo "CONNECTED"
 
-            echo "CURRENT USER:"
-            whoami
-
-            echo "CURRENT PATH:"
-            pwd
-
-            echo "CHECKING DIRECTORY"
-
-            if [ ! -d "/tmp/serverdeploy" ]; then
-              echo "DIRECTORY NOT FOUND"
-              exit 1
-            fi
-
             cd /tmp/serverdeploy
 
-            echo "INSIDE DIRECTORY"
-            pwd
+            echo "ADDING SAFE DIRECTORY"
+            git config --global --add safe.directory /tmp/serverdeploy
 
-            echo "FILES:"
-            ls -la
-
-            echo "GIT STATUS:"
+            echo "GIT STATUS"
             git status
 
-            echo "PULLING CODE"
+            echo "PULLING LATEST CODE"
             git pull origin main
+
+            echo "FILES"
+            ls -la
 
             echo "DEPLOY SUCCESS"
 
