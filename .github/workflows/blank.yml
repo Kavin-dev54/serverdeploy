@@ -2,35 +2,50 @@ name: Deploy Pipeline
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
+      # Checkout repository
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Setup SSH
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
+
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+
           chmod 600 ~/.ssh/id_ed25519
 
           ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
 
-      - name: Deploy to server
+      # Deploy Application
+      - name: Deploy to Server
         run: |
-          ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no root@${{ secrets.HOST }} << EOF
+          ssh -i ~/.ssh/id_ed25519 root@${{ secrets.HOST }} << 'EOF'
 
-          set -euxo pipefail
+            set -euxo pipefail
 
-          cd /tmp/serverdeploy
+            echo "CONNECTED TO SERVER"
 
-          echo "CLONE REPO"
+            # Go to project directory
+            cd /tmp/serverdeploy
 
-          git pull
-          
-          ls -la
+            echo "CURRENT DIRECTORY:"
+            pwd
 
-          echo "DEPLOY SUCCESS"
+            echo "PULLING LATEST CODE"
+            git pull origin main
+
+            echo "FILES AFTER PULL"
+            ls -la
+
+            echo "DEPLOY SUCCESS"
 
           EOF
