@@ -23,27 +23,12 @@ jobs:
 
           set -euxo pipefail
 
-          echo "WHOAMI:"
-          whoami
-
-          echo "PWD:"
-          pwd
-
-          echo "LIST /tmp"
-          ls -la /tmp
-
-          rm -rf /tmp/serverdeploy
-
-          mkdir -p /tmp/serverdeploy
-
           cd /tmp/serverdeploy
 
           echo "CLONE REPO"
 
-          git clone https://github.com/Kavin-dev54/serverdeploy.git
-
-          cd serverdeploy
-
+          git pull
+          
           ls -la
 
           echo "DEPLOY SUCCESS"
