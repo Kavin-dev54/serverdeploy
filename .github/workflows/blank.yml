@@ -25,26 +25,18 @@ jobs:
 
       - name: Deploy to Server
         run: |
-          ssh -tt -i ~/.ssh/id_ed25519 root@${{ secrets.HOST }} << 'EOF'
+          ssh -i ~/.ssh/id_ed25519 root@${{ secrets.HOST }} << 'EOF'
 
             set -euxo pipefail
 
-            echo "CONNECTED"
-
             cd /tmp/serverdeploy
 
-            echo "ADDING SAFE DIRECTORY"
             git config --global --add safe.directory /tmp/serverdeploy
 
-            echo "GIT STATUS"
-            git status
-
-            echo "PULLING LATEST CODE"
             git pull origin main
 
-            echo "FILES"
-            ls -la
-
             echo "DEPLOY SUCCESS"
+
+            exit
 
           EOF
