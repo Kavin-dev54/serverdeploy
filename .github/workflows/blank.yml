@@ -1,4 +1,4 @@
-name: Auto Deploy to Server
+name: Deploy HTML Project
 
 on:
   push:
@@ -10,37 +10,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Setup SSH
-        run: |
-          mkdir -p ~/.ssh
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@v1.0.3
 
-          chmod 600 ~/.ssh/id_ed25519
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
 
-          ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
-
-      - name: Connect and Deploy
-        run: |
-          ssh -i ~/.ssh/id_ed25519 developer@${{ secrets.HOST }} << 'EOF'
-
-            set -euxo pipefail
-
-            echo "CONNECTED TO SERVER"
-
-            cd /home/developer/serverdeploy
-
-            echo "CURRENT DIRECTORY:"
-            pwd
-
-            echo "PULLING LATEST CODE"
+          script: |
+            cd /var/www/my-html-project
 
             git pull origin main
 
-            echo "UPDATED FILES"
-
-            ls -la
-
-            echo "DEPLOYMENT SUCCESSFUL"
-
-          EOF
+            echo "Deployment Completed"
