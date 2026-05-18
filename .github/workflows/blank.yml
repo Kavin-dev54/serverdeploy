@@ -1,8 +1,9 @@
-name: Deploy Pipeline
+name: Auto Deploy Pipeline
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   deploy:
@@ -12,25 +13,37 @@ jobs:
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
+
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+
           chmod 600 ~/.ssh/id_ed25519
+
           ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
-      - name: Deploy to server
+
+      - name: Deploy Project
         run: |
-          ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no root@${{ secrets.HOST }} << EOF
+
+          ssh -i ~/.ssh/id_ed25519 root@${{ secrets.HOST }} << 'EOF'
+
           set -euxo pipefail
-          echo "WHOAMI:"
-          whoami
-          echo "PWD:"
-          pwd
-          echo "LIST /tmp"
-          ls -la /tmp
-          rm -rf /tmp/serverdeploy
-          mkdir -p /tmp/serverdeploy
-          cd /tmp/serverdeploy
-          echo "CLONE REPO"
-          git clone https://github.com/Kavin-dev54/serverdeploy.git
-          cd serverdeploy
+
+          echo "Connected to Server"
+
+          cd /var/www/serverdeploy
+
+          echo "Current Files"
           ls -la
-          echo "DEPLOY SUCCESS"
+
+          echo "Pull Latest Code"
+
+          git fetch origin
+
+          git reset --hard origin/main
+
+          echo "Restart Nginx"
+
+          systemctl restart nginx
+
+          echo "Deployment Success"
+
           EOF
